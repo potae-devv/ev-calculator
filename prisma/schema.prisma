@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("user")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  evCars       EvCar[]
+
+  @@map("users")
+}
+
+model EvCar {
+  id                 Int     @id @default(autoincrement())
+  name               String
+  batteryCapacityKwh Decimal @map("battery_capacity_kwh") @db.Decimal(6, 2)
+  kwhPerBaht         Decimal @map("kwh_per_baht") @db.Decimal(8, 4)
+  userId             Int     @map("user_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  charges Charge[]
+
+  @@map("ev_cars")
+}
+
+model Charge {
+  id        Int      @id @default(autoincrement())
+  startPct  Int      @map("start_pct")
+  endPct    Int      @map("end_pct")
+  evCarId   Int      @map("ev_car_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  evCar EvCar @relation(fields: [evCarId], references: [id], onDelete: Cascade)
+
+  @@map("charges")
+}
