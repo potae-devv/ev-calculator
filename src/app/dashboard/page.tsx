@@ -130,14 +130,24 @@ const fetchEVCars = useCallback(async () => {
               <span className="text-xs sm:text-sm text-foreground/60">
                 Welcome, {user?.name}
               </span>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground/70 hover:text-foreground 
-                         border border-black/[.08] dark:border-white/[.145] rounded-lg 
-                         hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] transition-colors w-full sm:w-auto text-center"
-              >
-                Logout
-              </button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Link
+                  href="/register"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700
+                           border border-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 
+                           transition-colors w-full sm:w-auto text-center"
+                >
+                  Register User
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground/70 hover:text-foreground 
+                           border border-black/[.08] dark:border-white/[.145] rounded-lg 
+                           hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] transition-colors w-full sm:w-auto text-center"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -303,6 +313,18 @@ const fetchEVCars = useCallback(async () => {
             <p className="text-xs sm:text-sm text-foreground/60">Track your EV charging sessions</p>
           </Link>
 
+          <Link
+            href="/register"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-black/[.08] 
+                     dark:border-white/[.145] p-4 sm:p-6 hover:shadow-md transition-shadow group"
+          >
+            <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">👤</div>
+            <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 group-hover:text-blue-600 transition-colors">
+              Register User
+            </h3>
+            <p className="text-xs sm:text-sm text-foreground/60">Create new user accounts</p>
+          </Link>
+
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-black/[.08] 
                         dark:border-white/[.145] p-4 sm:p-6 opacity-50 cursor-not-allowed">
             <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">💰</div>
@@ -310,15 +332,6 @@ const fetchEVCars = useCallback(async () => {
               Cost Calculator
             </h3>
             <p className="text-xs sm:text-sm text-foreground/60">Calculate charging costs (Coming Soon)</p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-black/[.08] 
-                        dark:border-white/[.145] p-4 sm:p-6 opacity-50 cursor-not-allowed">
-            <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">📍</div>
-            <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1">
-              Charging Stations
-            </h3>
-            <p className="text-xs sm:text-sm text-foreground/60">Find nearby charging stations (Coming Soon)</p>
           </div>
         </div>
       </main>

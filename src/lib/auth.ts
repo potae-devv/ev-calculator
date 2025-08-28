@@ -71,3 +71,56 @@ export async function validateUser(email: string, password: string): Promise<Use
     return null;
   }
 }
+
+// Helper function to get authenticated user from request
+export function getAuthenticatedUser(request: Request): AuthToken | null {
+  try {
+    const cookieHeader = request.headers.get('cookie');
+    if (!cookieHeader) {
+      return null;
+    }
+
+    // Parse cookies manually to get auth-token
+    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+      const [name, value] = cookie.trim().split('=');
+      acc[name] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const token = cookies['auth-token'];
+    if (!token) {
+      return null;
+    }
+
+    return verifyToken(token);
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return null;
+  }
+}
+
+// Next.js API route context type
+export interface ApiRouteContext {
+  params?: { [key: string]: string | string[] };
+}
+
+// Authentication middleware wrapper for API routes
+export function requireAuthentication(
+  handler: (request: Request, user: AuthToken, context?: ApiRouteContext) => Promise<Response>
+) {
+  return async (request: Request, context?: ApiRouteContext): Promise<Response> => {
+    const user = getAuthenticatedUser(request);
+    
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    return handler(request, user, context);
+  };
+}
