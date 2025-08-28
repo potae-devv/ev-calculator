@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { getChargesByEvCar, getEVCarById } from "@/lib/prisma";
+import { getChargesByEvCarWithDateFilter, getEVCarById } from "@/lib/prisma";
 
 // GET /api/ev-cars/[id]/charges - Get all charges for a specific EV car
 export async function GET(
@@ -52,8 +52,13 @@ export async function GET(
       );
     }
 
-    // Get all charges for this EV car
-    const charges = await getChargesByEvCar(evCarId);
+    // Get query parameters for date filtering
+    const url = new URL(request.url);
+    const startDate = url.searchParams.get('startDate') || undefined;
+    const endDate = url.searchParams.get('endDate') || undefined;
+
+    // Get charges for this EV car with optional date filtering
+    const charges = await getChargesByEvCarWithDateFilter(evCarId, startDate, endDate);
 
     return NextResponse.json({
       success: true,

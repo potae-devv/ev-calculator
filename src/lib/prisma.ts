@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 // PrismaClient is attached to the `globalThis` object in development to prevent
 // exhausting your database connection limit.
@@ -241,21 +241,7 @@ export async function deleteEVCar(id: number) {
   });
 }
 
-export async function getEVCarsByUser(userId: number) {
-  return await prisma.evCar.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-}
+
 
 // Charge operations
 export async function createCharge(
@@ -287,6 +273,45 @@ export async function createCharge(
 export async function getChargesByEvCar(evCarId: number) {
   return await prisma.charge.findMany({
     where: { evCarId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      evCar: {
+        select: {
+          id: true,
+          name: true,
+          userId: true,
+          batteryCapacityKwh: true,
+          kwhPerBaht: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getChargesByEvCarWithDateFilter(
+  evCarId: number, 
+  startDate?: string, 
+  endDate?: string
+) {
+  const whereClause: Prisma.ChargeWhereInput = { evCarId };
+
+  // Add date filters if provided
+  if (startDate || endDate) {
+    whereClause.createdAt = {};
+    
+    if (startDate) {
+      whereClause.createdAt.gte = new Date(startDate);
+    }
+    
+    if (endDate) {
+      // Add time to end date to include the entire day
+      const endDateTime = new Date(endDate + 'T23:59:59.999Z');
+      whereClause.createdAt.lte = endDateTime;
+    }
+  }
+
+  return await prisma.charge.findMany({
+    where: whereClause,
     orderBy: { createdAt: 'desc' },
     include: {
       evCar: {

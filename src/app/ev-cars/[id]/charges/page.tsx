@@ -54,7 +54,17 @@ export default function EVCarCharges() {
 
   const fetchCharges = useCallback(async () => {
     try {
-      const response = await fetch(`/api/ev-cars/${evCarId}/charges`);
+      // Build query parameters for date filtering
+      const queryParams = new URLSearchParams();
+      if (startDate) queryParams.append('startDate', startDate);
+      if (endDate) queryParams.append('endDate', endDate);
+      
+      let url = `/api/ev-cars/${evCarId}/charges`;
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
+      }
+      const response = await fetch(url);
+      
       if (response.ok) {
         const data = await response.json();
         setCharges(data.data);
@@ -69,7 +79,7 @@ export default function EVCarCharges() {
     } finally {
       setLoading(false);
     }
-  }, [evCarId]);
+  }, [evCarId, startDate, endDate]);
 
   useEffect(() => {
     checkAuth();
@@ -102,18 +112,8 @@ export default function EVCarCharges() {
     return { kwh, baht };
   };
 
-  const filteredCharges = charges.filter((charge) => {
-    const chargeDate = new Date(charge.createdAt);
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-
-    if (start && chargeDate < start) return false;
-    if (end && chargeDate > end) return false;
-    return true;
-  });
-
   const calculateTotals = () => {
-    return filteredCharges.reduce(
+    return charges.reduce(
       (totals, charge) => {
         const { kwh, baht } = calculateKwhAndBaht(charge);
         return {
@@ -167,7 +167,7 @@ export default function EVCarCharges() {
               Charging History
             </h1>
             <p className="text-sm sm:text-base text-foreground/60 mt-1 sm:mt-2">
-              {evCar?.name} • {filteredCharges.length} of {charges.length} charging sessions
+              {evCar?.name} • {charges.length} charging sessions
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
@@ -237,7 +237,7 @@ export default function EVCarCharges() {
         )}
 
         {/* Summary Stats */}
-        {filteredCharges.length > 0 && (
+        {charges.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 lg:mb-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-black/[.08] dark:border-white/[.145] p-4 sm:p-6">
               <div className="flex items-center">
@@ -274,19 +274,19 @@ export default function EVCarCharges() {
         )}
 
         {/* Charging Records Table */}
-        {filteredCharges.length === 0 ? (
+        {charges.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <div className="text-4xl sm:text-6xl mb-4">⚡</div>
             <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-              {charges.length === 0 ? "No charging records yet" : "No records match your filter"}
+              No charging records found
             </h3>
             <p className="text-sm sm:text-base text-foreground/60 mb-4 px-4">
-              {charges.length === 0 
-                ? `Start tracking charging sessions for ${evCar?.name}!`
-                : "Try adjusting your date filters to see more results."
+              {startDate || endDate 
+                ? "No charging records found for the selected date range. Try adjusting your date filters."
+                : `Start tracking charging sessions for ${evCar?.name}!`
               }
             </p>
-            {charges.length === 0 && (
+            {charges.length === 0 && !startDate && !endDate && (
               <button
                 onClick={() => router.push(`/charges?evCarId=${evCarId}`)}
                 className="px-4 py-2 sm:px-6 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 
@@ -327,7 +327,7 @@ export default function EVCarCharges() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredCharges.map((charge) => {
+                  {charges.map((charge) => {
                     const { kwh, baht } = calculateKwhAndBaht(charge);
                     return (
                       <tr key={charge.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -385,7 +385,7 @@ export default function EVCarCharges() {
 
             {/* Mobile Cards */}
             <div className="lg:hidden divide-y divide-black/[.08] dark:divide-white/[.145]">
-              {filteredCharges.map((charge) => {
+              {charges.map((charge) => {
                 const { kwh, baht } = calculateKwhAndBaht(charge);
                 return (
                   <div
